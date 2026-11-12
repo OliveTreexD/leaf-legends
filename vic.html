@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f7d4a">
+<title>Leaf Legends VIC – Victorian Plant ID Trainer</title>
+<script>
+window.onerror=function(msg,src,line){
+  var b=document.getElementById('err');
+  if(!b){b=document.createElement('div');b.id='err';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999;background:#c0392b;color:#fff;padding:10px 14px;font:14px system-ui;white-space:pre-wrap';(document.body||document.documentElement).appendChild(b)}
+  b.textContent='⚠️ Error: '+msg+' (line '+line+'). Please send this message so it can be fixed.';
+};
+</script>
+<style>
+:root{--bg:#f5f2e9;--ink:#1d2b1f;--mut:#6a786b;--g:#2f7d4a;--g2:#e3f1e6;--gold:#f4b400;--red:#d9534f;--sh:0 3px 12px rgba(0,0,0,.08);--r:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#2f7d4a,#3f9a5d);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:7px;box-shadow:var(--sh)}
+header h1{font-size:1.15rem;margin:0;flex:1}
+.stat{background:rgba(255,255,255,.2);border-radius:99px;padding:4px 9px;font-size:.8rem;white-space:nowrap}
+.netbar{background:#fff3c4;border-bottom:2px solid #f4b400;padding:10px 14px;font-size:.88rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.netbar[hidden]{display:none}
+main{max-width:1100px;margin:0 auto;padding:12px}
+.view{display:none}.view.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#fff;display:flex;justify-content:space-around;border-top:1px solid #e4e0d4;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+nav button{background:none;border:0;color:var(--mut);font:inherit;font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 12px;cursor:pointer}
+nav button span{font-size:1.45rem}
+nav button.on{color:var(--g);font-weight:700}
+.search{width:100%;padding:13px 16px;border-radius:99px;border:2px solid #ddd8c8;font-size:1rem;background:#fff;outline:none;-webkit-appearance:none}
+.search:focus{border-color:var(--g)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 2px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;background:#fff;border-radius:99px;padding:8px 13px;font:inherit;font-size:.85rem;box-shadow:var(--sh);cursor:pointer;white-space:nowrap;color:var(--ink)}
+.chip.on{background:var(--g);color:#fff}
+.meta{font-size:.8rem;color:var(--mut);margin:2px 4px 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.card{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);cursor:pointer;position:relative;transition:transform .15s}
+.card:active{transform:scale(.97)}
+.ph{width:100%;padding-top:100%;background:#dde7da center/cover no-repeat;position:relative}
+.ph .em{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:2.6rem}
+.ph.load{background-image:linear-gradient(90deg,#dde7da 0,#eef4ec 50%,#dde7da 100%);background-size:200% 100%;animation:shim 1.2s infinite}
+@keyframes shim{to{background-position:-200% 0}}
+.card .t{padding:8px 10px 11px}.card b{display:block;font-size:.9rem;line-height:1.2}
+.card i{display:block;font-size:.76rem;color:var(--mut);margin-top:3px;line-height:1.2}
+.lvl{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border-radius:99px;font-size:.66rem;padding:2px 7px;z-index:2}
+.fv{position:absolute;top:6px;left:6px;font-size:1rem;z-index:2}
+.potd{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff7df,#fff);border-radius:var(--r);padding:10px;box-shadow:var(--sh);margin-bottom:12px;cursor:pointer}
+.potd .ph{width:88px;padding-top:88px;flex:none;border-radius:14px}
+.potd small{color:#b07b00;font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:.6px}
+.potd b{display:block}.potd i{color:var(--mut);font-size:.8rem}.potd p{margin:4px 0 0;font-size:.82rem}
+.sheet{position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;background:rgba(15,25,15,.55);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet-in{background:var(--bg);width:100%;max-width:720px;max-height:94vh;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;position:relative}
+@media(min-width:760px){.sheet{align-items:center}.sheet-in{border-radius:22px;max-height:90vh}}
+.gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:#cfdccb;scrollbar-width:none}.gal::-webkit-scrollbar{display:none}
+.gal .ph{flex:0 0 100%;padding-top:75%;scroll-snap-align:center}
+.gbtn{position:absolute;top:50%;margin-top:-18px;border:0;background:rgba(0,0,0,.45);color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.3rem;cursor:pointer}
+.gbtn.l{left:8px}.gbtn.r{right:8px}
+.galnav{display:flex;justify-content:center;gap:5px;padding:7px}
+.galnav span{width:7px;height:7px;border-radius:50%;background:#bbb}.galnav span.on{background:var(--g)}
+.cap{font-size:.66rem;color:var(--mut);text-align:center;padding:0 14px}
+.x{position:absolute;top:10px;right:10px;z-index:3;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:1.1rem;cursor:pointer}
+.pad{padding:14px 18px 22px}
+.badge{display:inline-block;background:var(--g2);color:var(--g);border-radius:99px;padding:3px 10px;font-size:.75rem;font-weight:700}
+h2{margin:8px 0 2px;font-size:1.5rem}.sci{font-style:italic;color:var(--mut)}
+.aka{font-size:.8rem;color:var(--mut);margin-top:4px}
+h3{margin:18px 0 8px;font-size:1rem}
+.tips{list-style:none;padding:0;margin:0}
+.tips li{background:#fff;border-radius:14px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--sh);font-size:.93rem;line-height:1.35;text-align:left;margin-bottom:8px}
+.tips li span{font-size:1.25rem;line-height:1}
+.hook{margin-top:14px;background:linear-gradient(135deg,#fff3c4,#ffe9a8);border-radius:16px;padding:12px 14px;font-size:.98rem;line-height:1.4}
+.note{margin-top:10px;background:#ffe9e5;border-radius:14px;padding:10px 12px;font-size:.86rem}
+.trick{margin-top:12px;background:var(--g2);border-radius:14px;padding:10px 12px;font-size:.88rem}
+.trick a{color:var(--g);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.btn{border:0;border-radius:99px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer;background:#fff;box-shadow:var(--sh);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-size:.9rem}
+.btn.p{background:var(--g);color:#fff}.btn.gold{background:var(--gold);color:#3a2c00}.btn.red{background:var(--red);color:#fff}
+.btn[disabled]{opacity:.35}
+.nav2{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.dots5{letter-spacing:2px;color:var(--g)}
+.panel{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:12px}
+.sel{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select{font:inherit;padding:9px 12px;border-radius:12px;border:2px solid #ddd8c8;background:#fff;max-width:100%;color:var(--ink)}
+.prog{height:10px;background:#e8e4d8;border-radius:99px;overflow:hidden;margin-top:10px}
+.prog div{height:100%;background:linear-gradient(90deg,#4caf6e,#2f7d4a)}
+.flash{max-width:520px;margin:0 auto}
+.fc{cursor:pointer}
+.face{background:#fff;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.12);overflow:hidden}
+.fc .back{display:none}
+.fc.flip .front{display:none}
+.fc.flip .back{display:block;animation:pop .3s}
+@keyframes pop{from{transform:scale(.95);opacity:.4}to{transform:none;opacity:1}}
+.front .ph{padding-top:85%}
+.back .ph{padding-top:62%}
+.lbl{padding:14px;text-align:center}
+.bigname{font-size:1.45rem;font-weight:800;margin:4px 0 2px}
+.hint{font-size:.88rem;color:var(--mut);margin:6px 0}
+.ans{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.ans .btn{flex:1;max-width:200px;justify-content:center;padding:14px}
+.qimg{max-width:520px;margin:0 auto;border-radius:22px;overflow:hidden;box-shadow:var(--sh)}
+.qimg .ph{padding-top:75%}
+.opts{display:grid;gap:9px;max-width:520px;margin:14px auto 0}
+.opt{border:0;background:#fff;border-radius:16px;padding:13px 14px;font:inherit;text-align:left;box-shadow:var(--sh);cursor:pointer;font-size:.95rem;color:var(--ink);width:100%}
+.opt i{display:block;color:var(--mut);font-size:.8rem}
+.opt.ok{background:#d6f5df;outline:3px solid #3fae63}
+.opt.no{background:#fde0dc;outline:3px solid var(--red)}
+.qtop{display:flex;justify-content:space-between;max-width:520px;margin:0 auto 10px;font-weight:700}
+.center{text-align:center}.big{font-size:3rem}
+.tk{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;margin-bottom:12px}
+.tk h4{margin:0 0 6px;font-size:1.05rem}.tk ul,.tk ol{margin:0;padding-left:20px;line-height:1.55;font-size:.92rem}
+.rhyme{background:#fff3c4;border-radius:12px;padding:8px 10px;margin-top:8px;font-weight:600;font-size:.9rem}
+#fx{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:99;overflow:hidden}
+#fx span{position:absolute;top:-30px;animation:fall 1.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1d2b1f;color:#fff;padding:10px 16px;border-radius:99px;font-size:.9rem;z-index:60}
+.empty{text-align:center;color:var(--mut);padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 Leaf Legends VIC</h1>
+  <span class="stat" title="Day streak">🔥 <b id="stS">0</b></span>
+  <span class="stat" title="XP">⭐ <b id="stX">0</b></span>
+  <span class="stat" title="Mastered">🏆 <b id="stM">0</b></span>
+</header>
+<div id="net" class="netbar" hidden>
+  <span>📵 <b>Photos can't load right now.</b> Check your internet connection, then press Retry. Everything else still works.</span>
+  <button class="btn" id="netRetry">🔄 Retry photos</button>
+</div>
+<main>
+  <section id="v-explore" class="view on">
+    <div id="potd"></div>
+    <input id="q" class="search" type="search" placeholder="🔍 Search a name or feature… e.g. peppermint, red, coastal, swamp">
+    <div class="chips" id="chips"></div>
+    <div class="meta" id="meta"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+  <section id="v-learn" class="view"></section>
+  <section id="v-quiz" class="view"></section>
+  <section id="v-tricks" class="view"></section>
+</main>
+<nav>
+  <button data-v="explore" class="on"><span>🔍</span>Explore</button>
+  <button data-v="learn"><span>🃏</span>Flashcards</button>
+  <button data-v="quiz"><span>🎯</span>Quiz</button>
+  <button data-v="tricks"><span>💡</span>Tricks</button>
+</nav>
+<div id="sheet" class="sheet"><div class="sheet-in" id="sheetIn"></div></div>
+<div id="fx"></div>
+<noscript><p style="padding:20px">Please turn on JavaScript to use Leaf Legends.</p></noscript>
+
+<script>
+/* ============ PLANT DATA (VICTORIA) ============
+   Format: Scientific name | Common name | clue;clue;clue | memory hook | aliases | photo search override | note */
+var CATS={tree:['🌳','Trees'],shrub:['🌺','Shrubs'],ground:['🍀','Groundcovers & herbs'],grass:['🌾','Grasses, sedges & rushes'],strappy:['🪻','Lilies & strappy plants'],fern:['🌿','Ferns'],epi:['🪴','Orchids & epiphytes'],palm:['🌴','Palms & cycads'],climber:['🍇','Climbers & vines'],water:['💧','Water & wetland']};
+var RAW=`
+#tree
+Eucalyptus camaldulensis|River red gum|Massive spreading tree along rivers and floodplains;Smooth white, cream and grey mottled bark, shedding in patches;Buds with beaked caps, small gumnuts with valves poking out|The giant of the Murray and the Melbourne plains.
+Eucalyptus viminalis|Manna gum|Smooth white bark shedding in long ribbons that hang in the branch forks;Long narrow leaves, buds in threes;Koala favourite – produces sweet white ‘manna’|Ribbons hanging like party streamers = Manna gum.
+Eucalyptus ovata|Swamp gum|Smooth grey, white or salmon bark, often rough at the base;Broad leaves with wavy edges;Grows on wet, poorly drained flats|Ovata = oval leaves with wavy edges, feet in the swamp.
+Eucalyptus melliodora|Yellow box|Rough, flaky yellow-brown box bark on the lower trunk, smooth and pale above;Narrow, dull grey-green leaves;Honey-scented cream flowers (melli-odora = honey smell)|Yellow box = honey box: bees love it.
+Eucalyptus leucoxylon|Yellow gum|Smooth bark shedding in patches, mottled cream, yellow and grey;Buds in threes on long stalks;Flowers cream, pink or red|Smooth yellow patches + flowers in any colour.
+Eucalyptus tricarpa|Red ironbark|Hard, black, deeply furrowed ironbark;Buds and gumnuts in threes (tri-carpa);Flowers often pink or red, box-ironbark forests|Black iron bark + trios of nuts.
+Eucalyptus obliqua|Messmate stringybark|Thick, fibrous stringy bark right up into the branches;Lopsided leaf base – one side starts lower (oblique);Glossy leaves, barrel-shaped gumnuts|Oblique = lopsided leaf base. Messmate = stringy mate.
+Eucalyptus radiata|Narrow-leaved peppermint|Finely fibrous, interwoven grey ‘peppermint’ bark;Narrow leaves smell strongly of peppermint when crushed;Buds in big clusters, tiny round gumnuts|Crush a leaf = peppermint chewing gum.
+Eucalyptus polyanthemos|Red box|Rounded, grey-blue leaves like coins;Bark smooth or rough box-type;Red timber|Round blue coins = Red box.
+Eucalyptus macrorhyncha|Red stringybark|Thick, red-brown stringy bark;Glossy leaves;Gumnuts with a raised dome and valves poking up|Red strings + domed nuts.
+Eucalyptus regnans|Mountain ash|The world's tallest flowering plant – can exceed 90 m;Rough fibrous ‘stocking’ on the lower trunk, smooth white above with hanging ribbons;Wet mountain forests – killed by fire, regrows from seed|Regnans = reigning king of height.
+Eucalyptus pauciflora|Snow gum|Smooth white bark streaked with green, grey and orange;Thick leathery leaves with near-parallel veins;Twisted, multi-stemmed trees in alpine country|White bark with rainbow streaks in the snow.
+Eucalyptus globulus|Southern blue gum|Young leaves blue-grey, waxy, in opposite pairs hugging the stem;Adult leaves long and sickle-shaped;Large, ribbed, warty gumnuts like buttons|Big warty buttons + blue baby leaves.
+Eucalyptus microcarpa|Grey box|Rough, short-fibred grey box bark on the trunk;Smooth upper branches;Tiny gumnuts (micro-carpa)|Grey box, tiny nuts.
+Eucalyptus largiflorens|Black box|Rough, dark grey to black box bark all over;Dull grey-green drooping leaves;Grows on Murray River floodplains|Black box on the black-soil floodplains.|||Native to the Murray floodplains of northern Victoria.
+Eucalyptus cypellocarpa|Mountain grey gum|Smooth white-grey bark with a rough stocking at the base;Long glossy hanging leaves;Cup-shaped gumnuts (cypello-carpa = cup fruit)|Cup nuts on a grey mountain gum.
+Corymbia maculata|Spotted gum|Smooth bark shedding in patches – a dimpled camouflage of grey, cream and blue;Urn-shaped gumnuts;Very tall straight trunk|Maculata = spotty (im-maculate = no spots).|||Grows naturally in Victoria only in a small part of East Gippsland, but widely planted in Melbourne.
+Acacia melanoxylon|Blackwood|Dark furrowed bark;Phyllodes with 3–7 fine parallel veins;Pale cream balls, seeds wrapped in a coiled pink-red stalk|Melan-oxylon = black wood.
+Acacia implexa|Lightwood|Long, curved, sickle-shaped phyllodes;Pale cream ball flowers in summer;Pods twisted and coiled (implexa = tangled)|Tangled pods = Lightwood.
+Acacia mearnsii|Black wattle|Dark green, feathery fern-like leaves;Pale yellow ball flowers in late spring;Dark, rough bark|Black wattle = dark feathers, pale balls.
+Acacia dealbata|Silver wattle|Silvery-grey feathery fern-like leaves (dealbata = whitened);Bright yellow ball flowers in late winter;Smooth grey-green bark|SILVER feathers, GOLD balls in winter.
+Acacia pycnantha|Golden wattle|Broad, curved, glossy phyllodes with a gland on the edge;Big fragrant golden ball flowers in late winter–spring;Australia's national floral emblem|The national emblem wears glossy sickles.
+Allocasuarina verticillata|Drooping she-oak|Drooping, weeping branchlets with 9–13 teeth per joint;Large woody cylindrical cones;Dry rocky hills and coasts|Drooping branches + big cones.
+Allocasuarina littoralis|Black she-oak|Dark, rough, almost black bark;Fine branchlets with 6–8 teeth per joint;Small barrel-shaped cones|BLACK bark = BLACK she-oak.
+Casuarina cunninghamiana|River she-oak|Tall tree lining rivers;Fine dark-green drooping branchlets with 8–10 teeth per joint;Tiny cones under 1 cm|RIVER she-oak lives on the RIVER bank.|||Native to north-east Victoria.
+Banksia integrifolia|Coast banksia|Leaves dark green on top, bright silvery-white underneath;Smooth leaf edges on adults, leaves often in whorls;Pale yellow candle flowers, then grey woody cones|Flip a leaf: white undies!
+Callitris rhomboidea|Oyster Bay pine|Cypress-like tree with tiny scale leaves on jointed green branchlets;Small round woody cones that split into 6–8 scales;Coastal and rocky sites|A native cypress with tiny round cones.
+Exocarpos cupressiformis|Cherry ballart|Looks like a cypress: weeping, leafless green branchlets;Semi-parasite on the roots of other plants;Tiny nut sitting on a swollen red edible ‘cherry’ stalk|A cypress-shaped tree with its seed OUTSIDE the cherry.
+Melaleuca lanceolata|Moonah|Gnarled coastal tree with dark, rough (not papery) bark;Small dark-green leaves;White fluffy bottlebrush flowers in summer|Moonah = moody dark coastal melaleuca.
+Leptospermum laevigatum|Coast tea-tree|Twisted, shaggy grey trunks;Grey-green, blunt oval leaves;White 5-petal flowers in spring|Twisted coastal trunks + white tea-tree flowers.|||Native to the coast, but invasive in heathland and grassland where it doesn't naturally grow.
+Pittosporum undulatum|Sweet pittosporum|Glossy leaves with wavy edges (undulatum = wavy);Fragrant cream bell flowers in spring;Orange capsules with sticky seeds|Wavy leaves + sweet smell + orange balls.|||Native to East Gippsland, but a serious weed around Melbourne.
+Syzygium smithii|Lilly pilly|Glossy opposite leaves;Fluffy white flowers;Pink to purple edible fruit|Classic lilly pilly: glossy + fluffy + fruit.|Acmena smithii||Native to East Gippsland rainforest.
+Atherosperma moschatum|Southern sassafras|Opposite toothed leaves, whitish underneath;Crushed leaves smell of nutmeg;Cool, wet fern gullies|Moschatum = musky nutmeg smell.
+Nothofagus cunninghamii|Myrtle beech|Small, triangular, toothed glossy leaves;New growth bronze-red;Cool temperate rainforest in the Otways and Central Highlands|Tiny triangle leaves in the rainforest.
+Pomaderris aspera|Hazel pomaderris|Large leaves, rough above and felty underneath with strong veins;Fluffy cream flower clusters in spring;Wet forest understorey|Aspera = rough leaves like hazel.
+Olearia argophylla|Musk daisy-bush|Leaves silvery underneath (argo-phylla = silver leaf);Musky smell;Clusters of small white daisies, wet gullies|Silver leaf bottoms + musk smell.
+Brachychiton populneus|Kurrajong|Glossy leaves shaped like a poplar leaf with a long tip;Small cream bell flowers with red-spotted throats;Boat-shaped woody pods with itchy hairs|Populneus = poplar-shaped leaf.|||Native to northern Victoria.
+#shrub
+Acacia acinacea|Gold-dust wattle|Small oblong phyllodes with a tiny gland;Masses of golden ball flowers in spring;Pods curled or twisted|Gold dust sprinkled all over.
+Acacia paradoxa|Hedge wattle|Wavy-edged phyllodes with paired sharp spines at the base;Bright yellow ball flowers in spring;Dense, prickly shrub|Paradox: a pretty wattle you can't hug.
+Acacia verticillata|Prickly Moses|Sharp needle-like phyllodes in whorls (verticillata = whorled);Yellow rod-shaped flower spikes;Prickly shrub of damp places|Holy Moses, that's prickly!
+Acacia longifolia|Sallow wattle|Long, flat phyllodes with 2–3 strong veins;Bright yellow rod flowers in late winter;Fast-growing large shrub|Longi-folia = long leaves, golden rods.|||Native to eastern Victoria, but weedy outside its natural range.
+Acacia retinodes|Wirilda|Long narrow phyllodes;Pale yellow ball flowers most of the year;Grows in damp spots|Flowers nearly all year round.
+Acacia myrtifolia|Myrtle wattle|Red-tinged stems;Short, broad phyllodes with one main vein and a gland;Pale lemon ball flowers|Red stems + myrtle-like leaves.
+Bursaria spinosa|Sweet bursaria|Spiny branches with small leaves;Masses of fragrant white flowers in summer;Flat, purse-shaped seed capsules (bursa = purse)|Purses of seeds on a sweet-smelling spiny bush.
+Melaleuca citrina|Crimson bottlebrush|Stiff leaves that smell of lemon when crushed;Bright crimson bottlebrushes;Woody capsules in rows along the stems|Citrina = lemon leaves, crimson brushes.|Callistemon citrinus||Native to East Gippsland.
+Melaleuca pallida|Lemon bottlebrush|Pale lemon-cream bottlebrushes;Silky pinkish new growth;Grows along creeks|Pallida = pale brushes.|Callistemon pallidus
+Melaleuca ericifolia|Swamp paperbark|Papery bark;Small, narrow heath-like leaves;Cream fluffy brushes, forms thickets in swamps|Swamp paper thickets.
+Melaleuca decussata|Totem-poles|Small leaves in four neat rows down the stem (decussate);Small mauve bottlebrushes;Woody capsules stacked along the stems|Stacked capsules like a totem pole.
+Leptospermum continentale|Prickly tea-tree|Small, sharp-pointed leaves;Small white 5-petal flowers;Woody cup capsules|Prickly little tea-tree.
+Leptospermum lanigerum|Woolly tea-tree|Grey-green leaves covered in soft woolly hairs;White 5-petal flowers;Hairy capsules, grows in damp ground|Lanigerum = woolly.
+Kunzea ambigua|White kunzea|Tiny leaves;Masses of fluffy white flowers with long stamens;Honey smell, coastal|Fluffy white clouds that smell of honey.|||Native to coastal eastern Victoria.
+Correa alba|White correa|Round, thick, grey-felty leaves;White star-shaped flowers;Coastal dunes and cliffs|Alba = white stars on the coast.
+Correa reflexa|Native fuchsia|Opposite, rough leaves;Hanging tubular bells, often red with green or yellow tips;Flowers autumn–winter, loved by honeyeaters|Fuchsia bells in winter.
+Correa glabra|Rock correa|Smooth, glossy leaves (glabra = hairless);Pale green or red tubular bells;Rocky slopes|Glabra = glossy smooth leaves.
+Grevillea rosmarinifolia|Rosemary grevillea|Needle-like rosemary leaves;Red or pink spider flowers;Dense shrub|Rosemary leaves + red spiders.
+Grevillea alpina|Cat's claw grevillea|Small hairy leaves;Curly red and yellow flowers like claws;Low shrub of foothills|Curled claws of colour.
+Hakea decurrens|Bushy needlewood|Rigid, sharp needle leaves;Small white or pink flowers in clusters;Hard woody beaked seed capsules|Needles + hard beaked nuts.
+Banksia marginata|Silver banksia|Narrow leaves with a notched tip, white-silver underneath;Pale yellow cylinder flowers;Old grey cones stay on the plant|Silver bottoms + notched tips.
+Epacris impressa|Common heath|Small, sharp leaves;Tubular bells in pink, red or white with dimples at the base (impressa);Victoria's floral emblem, flowers winter–spring|Victoria's emblem rings pink bells.
+Olearia lirata|Snowy daisy-bush|Lance-shaped leaves, pale and felty underneath;Masses of white daisies in spring;Forest understorey|A snowy white daisy blanket.
+Ozothamnus ferrugineus|Tree everlasting|Narrow leaves, rusty underneath (ferrugineus = rusty);Dense clusters of tiny white flower heads;Damp sites|Rusty undersides + white everlasting heads.
+Cassinia aculeata|Common cassinia|Narrow, sticky, aromatic leaves with rolled edges;Flat clusters of tiny white flower heads in summer;Fast pioneer shrub|Dolly bush: sticky and smelly.
+Goodenia ovata|Hop goodenia|Glossy oval leaves with toothed edges, sticky new growth;Yellow fan-shaped flowers;Damp, shady spots|Yellow fans in the shade.
+Melicytus dentatus|Tree violet|Rigid, spiny branches;Small toothed leaves;Tiny cream bells, purple-white berries|A spiny violet relative.|Hymenanthera dentata
+Indigofera australis|Austral indigo|Pinnate blue-green leaves;Sprays of pink-mauve pea flowers;Slim pods|Indigo = dye plant with pea sprays.
+Dodonaea viscosa|Sticky hop-bush|Sticky, shiny leaves (viscosa = sticky);Papery winged capsules like hops, red-pink;Hardy shrub|Sticky leaves + hop-like wings.
+Coprosma quadrifida|Prickly currant-bush|Spiny twigs;Small opposite leaves;Small red edible berries|Prickly bush with red currants.
+Rhagodia candolleana|Seaberry saltbush|Fleshy, rounded leaves;Sprawling coastal shrub;Clusters of red berries|Sea berries on the dunes.
+Atriplex cinerea|Coast saltbush|Silver-grey, scaly leaves;Dense coastal shrub;Grows on dunes and shorelines|Cinerea = ash-grey salty leaves.
+Leucophyta brownii|Cushion bush|Silver-white tangled wiry stems forming a round cushion;Small yellow button flowers;Coastal cliffs and dunes|A silver pin-cushion.|Calocephalus brownii
+Myoporum insulare|Common boobialla|Thick, glossy, fleshy leaves;White flowers spotted purple;Purple berries, coastal|Shiny fleshy leaves + spotty flowers.
+Prostanthera lasianthos|Victorian Christmas bush|Tall shrub with toothed, minty leaves;Masses of white-mauve mint flowers with spots, around Christmas;Damp gullies|Mint flowers for Christmas.
+Calytrix tetragona|Common fringe-myrtle|Tiny leaves;Starry white or pink flowers with long hair-like bristles;Red calyx remains after flowering|Starry flowers with a fringe.
+Spyridium parvifolium|Dusty miller|Small leaves, whitish-felty underneath;Flower heads surrounded by white felty leaves, looking dusty;Forest shrub|Looks dusted in flour.
+Platylobium obtusangulum|Common flat-pea|Triangular, holly-like leaves with pointed lobes;Orange-yellow and red pea flowers;Flat pods (platy-lobium = flat pod)|Holly triangles + flat pods.
+Pultenaea daphnoides|Large-leaf bush-pea|Wedge-shaped leaves ending in a sharp point;Clusters of yellow and red pea flowers;Forest shrub|Egg-and-bacon peas on a big-leaved bush.
+Dillwynia cinerascens|Grey parrot-pea|Grey-green needle-like leaves;Yellow and red pea flowers;Small shrub|Grey needles + parrot-coloured peas.
+#ground
+Chrysocephalum apiculatum|Common everlasting|Silvery-grey leaves;Bright yellow button flower heads;Low spreading|Gold buttons.
+Xerochrysum bracteatum|Golden everlasting|Upright daisy;Shiny, papery golden bracts that crackle;Flowers last for ages when dried|Paper daisies that never wilt.|Bracteantha bracteata
+Leucochrysum albicans|Hoary sunray|Woolly grey leaves;White or yellow papery daisies;Grasslands, now rare|Hoary = frosty grey woolly leaves.
+Rhodanthe anthemoides|Chamomile sunray|Fine, narrow leaves;White papery daisies opening from red buds;Low mounding|Red buds, white suns.
+Brachyscome multifida|Cut-leaf daisy|Finely divided, feathery leaves;Masses of mauve-blue daisies;Low mound|Multifida = multi-cut leaves.
+Calocephalus citreus|Lemon beauty-heads|Grey leaves;Round lemon-yellow button flower heads on wiry stems;Grasslands|Little lemon balls.
+Craspedia variabilis|Common billy-buttons|Rosette of leaves at the base;A single golden ball flower on a tall stalk;Grasslands and woodlands|One golden ball on a stick.
+Pycnosorus globosus|Drumsticks|Silvery leaves;Golden spherical flower heads on tall stems;Northern plains|Drumsticks!|||Native to the northern Victorian plains.
+Wahlenbergia stricta|Tall bluebell|Slender upright herb;Sky-blue star/bell flowers with 5 lobes;Grassy areas|Bluebells in the grass.
+Microseris walteri|Murnong / Yam daisy|Dandelion-like leaves;Yellow flower that nods when in bud;Edible tuber – a staple food for Aboriginal people|Nodding yellow bud = murnong.|Microseris lanceolata
+Burchardia umbellata|Milkmaids|Grass-like leaves;Clusters of white star flowers with purple-red centres;Grassy woodlands in spring|Milkmaids in white aprons.
+Wurmbea dioica|Early Nancy|Small herb with a few narrow leaves;Small white star flowers with a purple band;One of the first spring flowers|Early Nancy is first to the spring party.
+Kennedia prostrata|Running postman|Flat ground-hugging runner;Leaves with 3 round, wavy-edged leaflets;Bright scarlet pea flowers|Scarlet postman running along the ground.
+Dichondra repens|Kidney weed|Tiny kidney-shaped leaves on creeping stems;Forms a dense mat;Tiny greenish flowers|A carpet of kidneys.
+Viola hederacea|Ivy-leaf violet|Kidney-shaped leaves;White and purple violet flowers on long stalks;Spreads by runners in damp shade|Purple and white mini violets.|Viola banksii
+Pelargonium australe|Austral stork's-bill|Soft, hairy, rounded lobed leaves;Pale pink flowers with darker veins;Long beak-like fruits|Stork's beak fruit.
+Scaevola aemula|Fairy fan-flower|Sprawling herb;Purple-blue fan-shaped flowers (all petals on one side);Sandy soils|Fairy fans.
+Myoporum parvifolium|Creeping boobialla|Prostrate mat;Small narrow leaves with tiny raised glands;White-pink star flowers|Parvi = small leaves.
+Carpobrotus rossii|Karkalla / Pigface|Thick, fleshy, 3-sided succulent leaves;Large bright magenta flowers;Coastal dunes, edible fruit and leaves|Pigface = fleshy fingers + pink flowers.
+Disphyma crassifolium|Round-leaved pigface|Short, cylindrical fleshy leaves;Pink to magenta daisy-like flowers;Saltmarsh and coast|Little sausages in the saltmarsh.
+Tetragonia implexicoma|Bower spinach|Fleshy, diamond-shaped leaves;Scrambles over coastal shrubs;Small red berries, edible leaves|Spinach growing up a bower.
+Mentha australis|River mint|Narrow leaves;Strong mint smell;White-mauve flowers, damp creek banks|Crush = mint by the river.
+Ajuga australis|Austral bugle|Hairy rosettes of leaves;Spikes of blue-purple flowers;Grassy woodlands|Blue bugle spikes.
+Lobelia pedunculata|Matted pratia|Tiny leaves forming a flat mat;Pale blue-white fan flowers on little stalks;Damp ground|A blue-dotted mat.|Pratia pedunculata
+Eryngium ovinum|Blue devil|Spiny, prickly leaves;Steel-blue spiky flower heads in summer;Grasslands|Blue devil = spiky blue thistle-look.
+Ptilotus spathulatus|Pussy tails|Flat rosette of leaves;Fluffy yellow-green cylinder flower spikes;Grasslands|Fluffy pussy cat tails.
+Convolvulus angustissimus|Pink bindweed|Narrow, often lobed leaves;Pink trumpet flowers;Low twining herb|Pink trumpets winding through grass.|Convolvulus erubescens
+Stackhousia monogyna|Creamy candles|Slender upright herb;Spikes of cream star flowers like candles;Fragrant at night|Creamy candles in the grass.
+Linum marginale|Native flax|Slender wiry stems;Sky-blue 5-petal flowers;Grassy woodlands|Flax = sky blue.
+#grass
+Themeda triandra|Kangaroo grass|Tufted grass turning red-orange in summer;Drooping clusters of spikelets with dark twisted awns;Grasslands and woodlands|Kangaroo grass turns rusty-red.|Themeda australis
+Poa labillardieri|Common tussock-grass|Dense blue-green tussock;Fine leaves;Tall, open, purplish seed heads|Poa = tussock.
+Poa poiformis|Coast tussock-grass|Blue-grey tussock with fine rolled leaves;Dense compact seed heads;Coastal dunes and cliffs|Coast tussock = blue-grey and salty.
+Poa sieberiana|Grey tussock-grass|Smaller, fine grey-green tussock;Open delicate seed heads;Dry forests|Small grey tussock.
+Rytidosperma caespitosum|Common wallaby-grass|Tufted grass;Fluffy white seed heads like cotton wool;Drought hardy|Wallaby grass = cotton-wool tufts.|Austrodanthonia caespitosa
+Austrostipa scabra|Rough spear-grass|Very fine, wiry leaves;Seeds with long twisted awns;Sharp seeds stick in socks|Spear grass = sharp spears.|Stipa scabra
+Microlaena stipoides|Weeping grass|Soft lawn grass;Seed heads droop/weep;Small ‘ears’ where the leaf meets the stem|Weeping seed heads.
+Dichelachne crinita|Long-hair plume-grass|Tufted grass;Feathery plume of long fine hair-like awns;Grassy woodlands|A feathery plume of hair.
+Chloris truncata|Windmill grass|Tufted grass;Finger-like spikes radiating from the top like a windmill;Dry plains|Windmill blades on a stick.
+Bothriochloa macra|Red-leg grass|Reddish stems and joints;Silky finger-like seed heads;Turns red in autumn|Red legs.
+Elymus scaber|Common wheat-grass|Tufted grass;Wheat-like seed spike with long awns;Spike curls when dry|Native wheat.
+Phragmites australis|Common reed|Tall reed to 3+ m;Big feathery purple-brown plume;Leaves stick out sideways from the stem|Phragmites = fence reed.
+Spinifex sericeus|Hairy spinifex|Silvery hairy runners spreading over beach sand;Spiky round seed heads that roll in the wind;Coastal dunes|Silver dune-binder with tumbleweed balls.
+Carex appressa|Tall sedge|Bright green tussock with triangular stems;Rough, cutting leaf edges;Dense brown flower spikes, wet places|Sedges have edges.
+Carex tereticaulis|Rush sedge|Round, rush-like stems (tereti-caulis = round stem);Brown flower heads;Wetland edges|A sedge pretending to be a rush.
+Ficinia nodosa|Knobby club-sedge|Clumping sedge with round, rush-like stems;Brown knobbly flower ball near the stem tip;Coasts and wetlands|Nodosa = knobby.|Isolepis nodosa
+Gahnia sieberiana|Red-fruit saw-sedge|Big tussock with razor-sharp leaf edges;Tall dark-brown flower plumes;Shiny red nuts|Gahnia = GASH-nia: saw edges.
+Lepidosperma laterale|Variable sword-sedge|Flat sword-like stems;Flower head seems to grow from the side;Dry forests|Laterale = side.
+Juncus pallidus|Pale rush|Thick, round, pale grey-green stems;Brown flower clusters partway up;Damp ground|Pallidus = pale rush.
+Juncus amabilis|Hollow rush|Round, soft, hollow green stems;Brown flower clusters partway up;Damp ground|Rushes are round.
+#strappy
+Lomandra longifolia|Spiny-headed mat-rush|Tough strappy leaves with 2–3 small teeth at the tip;Spiky cream-yellow flower heads among the leaves, sweet scent;Very widely planted|Check the tip: teeth!
+Lomandra filiformis|Wattle mat-rush|Fine, grass-like leaves;Small fragrant yellow flowers on short spikes;Dry forests|Thread leaves, wattle-yellow flowers.
+Lomandra multiflora|Many-flowered mat-rush|Stiff, narrow, grey-green leaves;Flowers in whorled clusters along branched stems;Dry forests|Multi-flora = clusters up the stem.
+Dianella revoluta|Black-anther flax-lily|Leaf edges roll under (revolute);Blue star flowers with dark anthers;Blue-purple berries|Revoluta = rolled edges.
+Dianella tasmanica|Tasman flax-lily|Broad leaves with finely toothed edges and a keel;Tall branched stems of blue star flowers;Glossy purple berries|Big broad Tasman leaves.
+Dianella admixta|Spreading flax-lily|Spreads by underground stems into patches;Narrow leaves;Blue flowers and berries|Admixta = mixing in, spreading around.
+Xanthorrhoea australis|Austral grass-tree|Thick, blackened trunk;Fine, stiff leaves in a ball;Tall spear-like flower spike|The classic black-trunk grass-tree.
+Xanthorrhoea minor|Small grass-tree|Small trunkless tufts;Fine narrow leaves;Short flower spike|Minor = mini grass-tree.
+Patersonia occidentalis|Long purple-flag|Grass-like tufts;3-petalled purple iris-like flowers, each lasting a day;Heathland|3 purple petals = Patersonia.
+Stypandra glauca|Nodding blue lily|Blue-grey leaves spaced along the stems;Nodding blue star flowers with yellow anthers;Rocky slopes|Nodding blue stars.
+Bulbine bulbosa|Bulbine lily|Fleshy, onion-like leaves;Yellow star flowers with fluffy stamens;Grasslands in spring|Yellow stars with fluffy middles.
+Arthropodium strictum|Chocolate lily|Grassy leaves;Purple flowers that smell of chocolate;Grasslands in spring|Sniff it – chocolate!|Dichopogon strictus
+Diplarrena moraea|Butterfly flag|Strappy iris-like leaves;White 3-petal flowers with yellow and purple centres;Damp heath|White butterflies on a flag.
+#fern
+Dicksonia antarctica|Soft tree-fern|Thick trunk covered in matted fibrous roots, no leaf scars;Big crown of fronds;Brown hairs at the frond bases, wet gullies|A soft trunk you could hug.
+Cyathea australis|Rough tree-fern|Slender trunk with rough knobbly old frond bases;Frond stalks prickly with dark scales;Wet forests|Rough, knobbly, prickly trunk.
+Blechnum nudum|Fishbone water-fern|Fronds shaped like a fish skeleton;Shiny black stalks;Creek banks|Fishbone fronds.
+Blechnum wattsii|Hard water-fern|Leathery fronds with a few broad leaflets;Pinkish new growth;Wet forest floors|Hard and leathery.
+Pteridium esculentum|Austral bracken|Tall stiff triangular fronds on single upright stalks;Spreads aggressively via underground rhizomes;Harsh, edges curl under|Bracken = brick-hard and harsh.
+Calochlaena dubia|Common ground-fern|Soft, lacy, light-green fronds;Grows in big colonies like bracken – but soft;Stem base with golden hairs|The soft cousin of bracken.
+Adiantum aethiopicum|Common maidenhair|Shiny black wiry stems;Small fan-shaped leaflets;Spreads in damp shade|Black wires + green fans.
+Asplenium flabellifolium|Necklace fern|Small fan-shaped leaflets along weak trailing fronds;Frond tips root to make new plants;Rocks and logs|A necklace of tiny fans.
+Polystichum proliferum|Mother shield-fern|Dark green, finely divided fronds;Little buds near the frond tips grow into new plants;Wet forests|Mother fern carries her babies.
+Doodia australis|Common rasp-fern|Small upright fern with rough fronds;Pink-red new fronds;Rocky slopes|Rough as a rasp.
+Gleichenia microphylla|Scrambling coral-fern|Fronds fork again and again like coral;Scrambles into thickets;Wet heath and swamps|Coral branching.
+Histiopteris incisa|Bat's wing fern|Pale bluish-green fronds;Leaflets in pairs like bat wings;Disturbed wet forest|Bat wings!
+Todea barbara|King fern|Massive trunk-like base;Leathery, upright fronds;Creek banks in gullies|King of ferns with a massive base.
+Cheilanthes austrotenuifolia|Rock fern|Small fern in dry rocky spots;Narrow fronds on dark stems;Leaflet edges roll under over the spores|The rock fern of dry places.
+#epi
+Dendrobium speciosum|Rock orchid|Huge clumps on rocks;Thick pseudobulbs topped by tough leathery leaves;Long sprays of cream-yellow flowers in spring|Speciosum = spectacular.|||Native to East Gippsland.
+Sarcochilus australis|Butterfly orchid|Small orchid growing on trees in wet gullies;Narrow leathery leaves;Green-brown flowers with a white striped lip|A tiny butterfly on a branch.
+Pyrrosia rupestris|Rock felt-fern|Small fleshy fronds on a creeping rhizome over rocks and trees;Round ‘button’ fronds plus longer fertile fronds;Felty underside|Felt buttons on rocks.|||Native to East Gippsland.
+Microsorum diversifolium|Kangaroo fern|Glossy, leathery fronds;Some fronds whole, others lobed (diversi-folium);Creeping rhizome with round spore dots|Diverse leaves on a hopping rhizome.|Zealandia pustulata,Lecanopteris pustulata
+Glossodia major|Wax-lip orchid|Ground orchid with a single hairy leaf;Purple flower with a white centre;Waxy lip, spring|Wax lips in purple.
+Diuris pardina|Leopard orchid|Ground orchid;Yellow flowers with brown leopard spots;Two upright petals like donkey ears|Leopard spots + donkey ears.
+Pterostylis nutans|Nodding greenhood|Ground orchid;Green hooded flower that nods forward;Shady forests in winter–spring|A greenhood nodding hello.
+Thelymitra pauciflora|Slender sun-orchid|Ground orchid with a single grass-like leaf;Blue flowers;Open only on warm sunny days|Sun orchid = needs sunshine.
+Caladenia carnea|Pink fingers|Ground orchid with one narrow leaf;Small pink flower with narrow finger-like petals;Spring|Pink fingers waving.
+#palm
+Livistona australis|Cabbage-tree palm|Tall palm with round fan leaves;Leaf stalks with sharp spines;Leaf segment tips droop|Fan + spiny stalks.|||In Victoria grows naturally only in far East Gippsland.
+Macrozamia communis|Burrawang|Trunkless or short-trunked cycad;Glossy feathery leaves with stiff leaflets;Big cones, seeds toxic|A glossy cycad fan.|||Native to East Gippsland.
+#climber
+Hardenbergia violacea|Purple coral-pea|Twining vine with long, leathery, single leaves;Masses of small purple pea flowers in late winter;Flat pods|Violacea = violet.
+Kennedia rubicunda|Dusky coral-pea|Strong twining vine with 3 leaflets;Large dark-red pea flowers;Hairy pods|Dusky red peas.
+Clematis aristata|Mountain clematis|Opposite leaves with 3 leaflets;White 4-petal star flowers;Fluffy feathery seed heads|Old man's fluffy beard.
+Clematis microphylla|Small-leaved clematis|Small, narrow leaflets;Cream star flowers;Fluffy seed heads, coastal|Small leaves, same fluffy beard.
+Billardiera mutabilis|Common apple-berry|Thin twining stems;Greenish-yellow bells that turn purple (mutabilis = changeable);Hairy, sausage-shaped edible berries|Changing bells, apple berries.|Billardiera scandens
+Pandorea pandorana|Wonga vine|Glossy pinnate leaves;Masses of small cream trumpet flowers with maroon throats;Woody pods|Wonga = small trumpets.
+Comesperma volubile|Love creeper|Almost leafless wiry twining stems;Masses of small blue-mauve flowers;Twines through shrubs|Love creeper = blue love knots.
+Glycine clandestina|Twining glycine|Thin twining herb;Leaves with 3 narrow leaflets;Small mauve pea flowers|Clandestine = hiding in the grass.
+Muehlenbeckia adpressa|Climbing lignum|Wiry, scrambling stems;Heart-shaped leaves;Tiny flowers, coastal scrub|A wiry heart-leaf scrambler.
+Parsonsia brownii|Twining silkpod|Opposite leaves;Cream tubular flowers;Long pods with silky seeds|Silky seeds in long pods.
+#water
+Typha domingensis|Narrow-leaf cumbungi|Tall, flat, strap leaves;Brown sausage-shaped flower spike;Forms dense stands in water|Cumbungi = the bulrush with brown sausages.
+Eleocharis acuta|Common spike-sedge|Round green leafless stems;A single brown spikelet at the tip;Shallow water and wet ground|One spike on top.
+Schoenoplectus tabernaemontani|River club-sedge|Tall, round, soft green stems;Brown spikelets clustered near the tip;Grows in water|Tall soft clubs in the river.|Schoenoplectus validus
+Cycnogeton procerum|Water ribbons|Long floating or upright ribbon leaves;Flowers in spikes;Edible tubers|Ribbons in the water.|Triglochin procera
+Ornduffia reniformis|Running marsh-flower|Kidney-shaped floating leaves;Yellow flowers with fringed petals;Spreads by runners|Yellow fringes on kidney pads.|Villarsia reniformis
+Nymphoides crenata|Wavy marshwort|Round floating leaves;Yellow flowers with wavy fringed petals;Still water|Yellow frills floating.
+Marsilea drummondii|Nardoo|Water fern with four-leaf-clover leaves;Hard spore cases once ground into flour;Shallow water|Four-leaf clover fern.
+Persicaria decipiens|Slender knotweed|Narrow leaves;Pink flower spikes;Papery sheath around the stem joints|Knot-weed = knotty joints.
+Juncus kraussii|Sea rush|Saltmarsh rush;Stiff, sharp-pointed round stems;Clumps in salty mud|Sea rush stabs.|Juncus krausii
+Sarcocornia quinqueflora|Beaded glasswort|Jointed, fleshy stems like strings of beads;Turns red in autumn;Saltmarsh|Beads in the saltmarsh.|Salicornia quinqueflora
+Vallisneria australis|Ribbonweed|Submerged long ribbon leaves;Female flowers on long coiled stalks;Freshwater|Ribbons underwater.
+Myriophyllum crispatum|Upright water-milfoil|Feathery leaves in whorls;Stems standing up out of shallow water;Wetlands|A feathery bottlebrush in the water.
+`;
+
+/* ============ GROUP CHEAT SHEETS (VICTORIA) ============ */
+var GROUPS=[
+{e:'🪵',t:'Eucalypts: read the bark',g:['Eucalyptus','Corymbia'],tips:['<b>Gum</b> – smooth bark shedding in ribbons or patches (manna gum, swamp gum, river red gum, snow gum).','<b>Box</b> – short, flaky grey or yellow-brown bark, often just on the lower trunk (yellow box, grey box, black box, red box).','<b>Ironbark</b> – rock-hard, black, deeply furrowed, never peels (red ironbark).','<b>Stringybark</b> – thick fibres you can pull off in strings (messmate, red stringybark).','<b>Peppermint</b> – fine, soft, interwoven bark and minty leaves (narrow-leaved peppermint).','<b>Half-barked</b> – rough stocking at the base, smooth above (mountain ash, mountain grey gum).'],r:'Gums are smooth, irons are tough, strings pull off, boxes are rough!'},
+{e:'📜',t:'Paperbarks & bottlebrushes',g:['Melaleuca','Callistemon'],tips:['Papery bark peeling in layers (most species – moonah is the rough exception).','Bottlebrush flowers – the stem keeps growing leaves beyond the brush.','Old woody capsules hug the stem in rows like beads.','All Callistemons are now Melaleucas – same plants, new name.'],r:'Paper bark + brush + beads = Melaleuca.'},
+{e:'🍵',t:'Tea-trees & kunzeas',g:['Leptospermum','Kunzea'],tips:['Small stiff leaves, often with a sharp point.','<b>Tea-trees</b> – white 5-petal flowers like tiny apple blossom, woody cups stay on the branches.','<b>Kunzea</b> – fluffy flowers with long stamens that stick out.','Woolly tea-tree = soft hairy leaves. Coast tea-tree = twisted grey trunks.'],r:'Apple blossom = tea-tree. Fluffy = kunzea.'},
+{e:'💛',t:'Wattles',g:['Acacia'],tips:['Most leaves are phyllodes – flattened stalks with parallel veins, often with a small gland on the edge.','Black wattle and silver wattle have feathery fern-like leaves instead.','Flowers are fluffy BALLS or RODS – note which!','Prickly Moses and hedge wattle are spiny – look before you touch.'],r:'Balls or rods? Then check the pods.'},
+{e:'🪥',t:'Protea family: grevilleas, hakeas, banksias',g:['Grevillea','Hakea','Banksia'],tips:['<b>Grevillea</b> – spider flowers with long hooked styles, soft pods.','<b>Hakea</b> – similar flowers but rock-hard woody beaked fruits that stay on the plant.','<b>Banksia</b> – flowers packed into a candle, leaves silver underneath on our local species.'],r:'Spider = Grevillea. Hard beak = Hakea. Candle = Banksia.'},
+{e:'🎋',t:'She-oaks & native cypress',g:['Casuarina','Allocasuarina','Callitris','Exocarpos'],tips:['She-oak needles are really branchlets – the true leaves are tiny teeth in rings at each joint.','Count the teeth: black she-oak 6–8, river she-oak 8–10, drooping she-oak 9–13.','<b>Callitris</b> (native cypress) has tiny scale leaves and small round cones that split open.','<b>Cherry ballart</b> looks like a cypress but grows a red fleshy cherry stalk.'],r:'Count the teeth to name the she-oak.'},
+{e:'🌲',t:'Cool rainforest & fern gully plants',g:['Nothofagus','Atherosperma','Pomaderris','Olearia','Pittosporum','Syzygium','Prostanthera'],tips:['<b>Myrtle beech</b> – tiny triangle toothed leaves, red new growth.','<b>Southern sassafras</b> – opposite leaves that smell of nutmeg.','<b>Hazel pomaderris</b> – rough leaves, felty underneath.','<b>Musk daisy-bush</b> – silver-backed leaves with a musky smell.','<b>Christmas bush</b> – minty leaves and white-mauve flowers in December.'],r:'Sniff the gully: nutmeg, musk and mint.'},
+{e:'🔔',t:'Heaths & correas',g:['Epacris','Correa'],tips:['<b>Common heath</b> – small sharp leaves and tubular bells in pink, red or white. The Victorian floral emblem.','<b>Correas</b> – opposite leaves and tube-shaped bells made of 4 joined petals.','White correa = round grey leaves and white stars. Native fuchsia = red bells with green tips.'],r:'Bells everywhere: heaths are sharp, correas are soft.'},
+{e:'🌼',t:'Daisies & everlastings',g:['Chrysocephalum','Xerochrysum','Leucochrysum','Rhodanthe','Brachyscome','Calocephalus','Craspedia','Pycnosorus','Microseris','Ozothamnus','Cassinia','Leucophyta'],tips:['A daisy flower is really a head of many tiny flowers.','<b>Everlastings</b> – papery bracts that crackle and last when dried.','<b>Billy-buttons and drumsticks</b> – perfect golden balls on tall stalks.','<b>Murnong</b> – a yellow dandelion-look flower that nods in bud.','<b>Cassinia and tree everlasting</b> – shrubs with flat clusters of tiny white heads.'],r:'Paper, buttons, balls and dandelions.'},
+{e:'🌾',t:'Grasses vs sedges vs rushes',g:['Themeda','Poa','Rytidosperma','Austrostipa','Microlaena','Dichelachne','Chloris','Bothriochloa','Elymus','Phragmites','Spinifex','Carex','Ficinia','Gahnia','Lepidosperma','Juncus'],tips:['<b>Grasses</b> – hollow round stems with knee-like joints, leaves in two rows.','<b>Sedges</b> (Carex, Gahnia, Ficinia) – solid stems, often triangular, leaves in 3 rows.','<b>Rushes</b> (Juncus) – round, pithy stems with tiny 6-part flowers.','Kangaroo grass = rusty drooping heads. Wallaby grass = cotton-wool tufts. Spear-grass = long twisted awns.','Roll the stem between your fingers: triangle = sedge, round and no joints = rush, joints = grass.'],r:'Sedges have edges, rushes are round, grasses have knees all the way to the ground!'},
+{e:'🪻',t:'Strappy plant showdown',g:['Lomandra','Dianella','Xanthorrhoea','Patersonia','Stypandra','Bulbine','Arthropodium','Diplarrena','Burchardia','Wurmbea'],tips:['<b>Lomandra</b> – leaf tip often has 2–3 tiny teeth, spiky cream or yellow flower heads.','<b>Dianella</b> – leaves fold into a V, blue star flowers then glossy blue-purple berries.','<b>Xanthorrhoea</b> – grass-tree: ball of fine stiff leaves, tall spear flower spike.','<b>Patersonia</b> – 3 purple petals. <b>Butterfly flag</b> – 3 white petals.','<b>Lilies</b> – bulbine (yellow stars), chocolate lily (purple, smells of chocolate), milkmaids (white stars).'],r:'Teeth = Lomandra. Blue berries = Dianella. Spear = grass-tree.'},
+{e:'🌿',t:'Fern finder',g:['Dicksonia','Cyathea','Blechnum','Pteridium','Calochlaena','Adiantum','Asplenium','Polystichum','Doodia','Gleichenia','Histiopteris','Todea','Cheilanthes','Pyrrosia','Microsorum','Marsilea'],tips:['<b>Soft vs rough tree-fern</b> – soft = thick trunk of matted roots. Rough = slender trunk with knobbly stubs and prickly stalks.','<b>Fishbone water-fern</b> – fronds like a fish skeleton, black stalks.','<b>Maidenhair</b> – shiny black wiry stems + fan leaflets.','<b>Bracken</b> = harsh triangle on one stalk. <b>Ground-fern</b> = the soft look-alike.','<b>Mother shield-fern</b> – baby plants growing from buds near the frond tips.'],r:'Soft trunks hug, rough trunks prickle.'},
+{e:'🫛',t:'Pea-flower family',g:['Hardenbergia','Kennedia','Glycine','Indigofera','Pultenaea','Dillwynia','Platylobium'],tips:['Flowers shaped like a little bonnet: a big flag petal, two wings and a boat-shaped keel.','Fruit = pods.','Many local peas are yellow and red – the egg-and-bacon look.','Purple = Hardenbergia. Scarlet runner = running postman. Dark red vine = dusky coral-pea.'],r:'Flag, wings, keel – then a pod.'},
+{e:'🌺',t:'Orchids',g:['Dendrobium','Sarcochilus','Glossodia','Diuris','Pterostylis','Thelymitra','Caladenia'],tips:['Every orchid has one special petal: the lip.','<b>Greenhoods</b> – green hooded flowers. <b>Sun orchids</b> – blue flowers that open only in sunshine.','<b>Donkey and leopard orchids</b> – two upright petals like ears. <b>Pink fingers</b> – narrow finger petals.','Most Victorian orchids grow in the ground and appear in late winter–spring.'],r:'Hoods, ears, fingers and sun-lovers.'},
+{e:'🌊',t:'Coastal survivors',g:['Carpobrotus','Disphyma','Tetragonia','Rhagodia','Atriplex','Myoporum','Sarcocornia'],tips:['Coastal plants fight salt, wind and sun.','<b>Fleshy leaves</b> store water – karkalla, pigface, bower spinach, glasswort.','<b>Silver or grey leaves</b> reflect sun – saltbush, cushion bush.','<b>Runners</b> bind sand – spinifex, karkalla.'],r:'Fleshy, silver or creeping = coastal survivor.'},
+{e:'🍇',t:'Vine giveaways',g:['Clematis','Billardiera','Pandorea','Comesperma','Muehlenbeckia','Parsonsia'],tips:['Fluffy seed heads + opposite 3-part leaves = Clematis.','Trumpet flowers + pinnate leaves = wonga vine.','Wiry, almost leafless twiner with blue flowers = love creeper.','Hairy sausage berries = apple-berry. Long silky pods = silkpod.'],r:'Fluff, trumpets, love knots and sausages.'},
+{e:'💧',t:'Water plants',g:['Typha','Eleocharis','Schoenoplectus','Cycnogeton','Ornduffia','Nymphoides','Persicaria','Vallisneria','Myriophyllum'],tips:['<b>Floating leaves</b> – marsh-flower and marshwort (yellow fringed flowers).','<b>Submerged</b> – ribbonweed (long ribbons), water-milfoil (feathery whorls).','<b>Emergent</b> – cumbungi (brown sausages), club-sedge, spike-sedge, water ribbons.'],r:'Float, sink or stand at the edge?'},
+{e:'🌴',t:'Palms & cycads',g:['Livistona','Macrozamia'],tips:['Victoria has just one native palm – the cabbage-tree palm of far East Gippsland.','<b>Fan palm</b> – round fan leaves with spiny stalks.','<b>Cycads</b> – stiff glossy leaflets, cones in the centre, toxic seeds.'],r:'One palm, one cycad, both in the far east.'}
+];
+
+/* ============ PARSE ============ */
+var P=[],BY={};
+(function(){var c='tree';RAW.split('\n').forEach(function(l){l=l.trim();if(!l)return;if(l[0]==='#'){c=l.slice(1).trim();return}
+ var f=l.split('|').map(function(s){return (s||'').trim()});var sci=f[0];var cv=/['‘’]/.test(sci);
+ var q=f[5]||sci.replace(/\s*['‘’][^'‘’]*['‘’]/g,'').replace(/\s+(subsp\.|var\.)\s+/g,' ').replace(/\s+(spp?\.|species)$/,'').trim();
+ var p={id:sci,sci:sci,common:f[1]||sci,cat:c,tips:(f[2]||'').split(';').map(function(s){return s.trim()}).filter(Boolean),hook:f[3]||'',aka:(f[4]||'').split(',').map(function(s){return s.trim()}).filter(Boolean),q:q,cv:cv,note:f[6]||''};
+ P.push(p);BY[sci]=p})})();
+
+/* ============ SAFE STORAGE ============ */
+var store=(function(){var ok=false,mem={};try{localStorage.setItem('__t','1');localStorage.removeItem('__t');ok=true}catch(e){}
+ return{get:function(k){try{return ok?localStorage.getItem(k):(k in mem?mem[k]:null)}catch(e){return k in mem?mem[k]:null}},
+        set:function(k,v){try{if(ok)localStorage.setItem(k,v);else mem[k]=v}catch(e){mem[k]=v}}}})();
+function loadJSON(k,d){try{var v=JSON.parse(store.get(k));return v||d}catch(e){return d}}
+
+/* ============ HELPERS & STATE ============ */
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+function attr(s){return String(s).replace(/"/g,'&quot;')}
+function genus(p){return p.sci.split(' ')[0]}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+var S=Object.assign({box:{},fav:{},xp:0,best:{},streak:0,last:''},loadJSON('llvic_state',{}));
+function save(){store.set('llvic_state',JSON.stringify(S))}
+function lv(p){return S.box[p.id]||0}
+function groupIdx(p){var g=genus(p);for(var i=0;i<GROUPS.length;i++)if(GROUPS[i].g.indexOf(g)>-1)return i;return -1}
+function ico(t){t=t.toLowerCase();
+ if(/bark|trunk/.test(t))return'🪵';
+ if(/smell|scent|crush|lemon|mint|fragrant|sniff/.test(t))return'👃';
+ if(/flower|brush|candle|plume|seed head|panicle|bell|trumpet|petal/.test(t))return'🌸';
+ if(/fruit|berr|nut|pod|capsule|cone|fig|seed|grape/.test(t))return'🫐';
+ if(/leaf|leaves|leaflet|frond|phyllode|needle|branchlet/.test(t))return'🍃';
+ if(/grow|swamp|creek|river|coast|dune|rainforest|wet|water|rock|shade|beach|gully|gullies|forest|saltmarsh/.test(t))return'📍';
+ if(/stem|cane|tendril|twin|climb|thorn|prickl|spine|runner/.test(t))return'🌱';
+ return'👀'}
+function stripP(t){return t.replace(/\s*\([^)]*\)/g,'')}
+function tipsHTML(p,strip){return '<ol class="tips">'+p.tips.map(function(t){return '<li><span>'+ico(t)+'</span><div>'+(strip?stripP(t):t)+'</div></li>'}).join('')+'</ol>'}
+function stats(){$('#stS').textContent=S.streak;$('#stX').textContent=S.xp;$('#stM').textContent=P.filter(function(p){return lv(p)>=3}).length+'/'+P.length}
+function touch(){var d=new Date().toDateString();if(S.last===d)return;var y=new Date(Date.now()-864e5).toDateString();S.streak=S.last===y?S.streak+1:1;S.last=d;save();stats()}
+function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},1700)}
+function confetti(n){n=n||18;var fx=$('#fx'),em=['🌿','🍃','🌸','✨','🌼','⭐'];for(var i=0;i<n;i++){(function(i){var s=document.createElement('span');s.textContent=em[i%em.length];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.3+'s';s.style.fontSize=(1+Math.random())+'rem';fx.appendChild(s);setTimeout(function(){s.remove()},1800)})(i)}}
+function deck(d){return P.filter(function(p){return d==='all'||(d==='fav'?S.fav[p.id]:p.cat===d)})}
+function pickW(arr,avoid){var tot=0;var w=arr.map(function(p){var x=Math.pow(6-Math.min(5,lv(p)),2);if(p.id===avoid&&arr.length>1)x=0;tot+=x;return x});var r=Math.random()*tot;for(var i=0;i<arr.length;i++){r-=w[i];if(r<=0&&w[i]>0)return arr[i]}return arr.filter(function(p){return p.id!==avoid})[0]||arr[0]}
+function deckSel(id){return '<select id="'+id+'"><option value="all">🌏 All plants ('+P.length+')</option><option value="fav">⭐ Favourites ('+Object.keys(S.fav).length+')</option>'+Object.keys(CATS).map(function(k){return '<option value="'+k+'">'+CATS[k][0]+' '+CATS[k][1]+' ('+P.filter(function(p){return p.cat===k}).length+')</option>'}).join('')+'</select>'}
+
+/* ============ PHOTOS ============ */
+var PC=loadJSON('llvic_ph',{});
+function savePC(){store.set('llvic_ph',JSON.stringify(PC))}
+var pend={},QQ=[],busy=false,fails=0,NET=true;
+function tfetch(u){var c=window.AbortController?new AbortController():null;var t=setTimeout(function(){if(c)c.abort()},9000);
+ return fetch(u,c?{signal:c.signal}:{}).then(function(r){clearTimeout(t);return r},function(e){clearTimeout(t);throw e})}
+function showNet(on){$('#net').hidden=!on}
+function getPhoto(p){
+ if(Object.prototype.hasOwnProperty.call(PC,p.id))return Promise.resolve(PC[p.id]);
+ if(!NET)return Promise.resolve(null);
+ if(pend[p.id]){for(var i=0;i<QQ.length;i++)if(QQ[i].p===p){QQ.push(QQ.splice(i,1)[0]);break}return pend[p.id]}
+ pend[p.id]=new Promise(function(res){QQ.push({p:p,res:res});pump()});return pend[p.id]}
+async function pump(){if(busy)return;busy=true;
+ while(QQ.length){
+  if(!NET){while(QQ.length){var x=QQ.pop();delete pend[x.p.id];x.res(null)}break}
+  var job=QQ.pop(),ph=null,ok=true;
+  try{ph=await findPhoto(job.p);fails=0}catch(e){ok=false;fails++;if(fails>=3){NET=false;showNet(true)}}
+  if(ok){PC[job.p.id]=ph;savePC()}
+  delete pend[job.p.id];job.res(ph);await sleep(ok?450:150)}
+ busy=false}
+async function findPhoto(p){
+ if(p.cv){var w=null;try{w=await wiki(p.sci.replace(/[‘’]/g,"'"))}catch(e){}if(w)return w}
+ var r=await inat(p.q);if(r)return r;
+ try{return await wiki(p.q)}catch(e){return null}}
+async function inat(q){
+ var r=await tfetch('https://api.inaturalist.org/v1/taxa/autocomplete?per_page=10&q='+encodeURIComponent(q));
+ if(!r.ok)throw new Error('http '+r.status);var j=await r.json();
+ var rs=(j.results||[]).filter(function(t){return t.default_photo&&(!t.iconic_taxon_name||t.iconic_taxon_name==='Plantae')});var lq=q.toLowerCase();
+ var t=rs.filter(function(t){return t.name.toLowerCase()===lq})[0]||rs.filter(function(t){return (t.matched_term||'').toLowerCase()===lq})[0]||rs[0];
+ return t?{id:t.id,u:t.default_photo.medium_url,a:t.default_photo.attribution,s:'iNaturalist'}:null}
+async function wiki(q){
+ var r=await tfetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q.replace(/ /g,'_')));
+ if(!r.ok)return null;var j=await r.json();
+ return j.thumbnail&&j.type!=='disambiguation'?{u:j.thumbnail.source,a:j.title,s:'Wikipedia'}:null}
+async function getGallery(p){
+ var ph=await getPhoto(p);if(!ph)return[];if(!ph.id)return[ph];
+ var k='g:'+ph.id;if(PC[k])return PC[k];
+ try{var j=await (await tfetch('https://api.inaturalist.org/v1/taxa/'+ph.id)).json();
+  var arr=((j.results&&j.results[0]&&j.results[0].taxon_photos)||[]).slice(0,8).map(function(x){return{u:x.photo.medium_url.replace('/medium.','/large.'),a:x.photo.attribution,s:'iNaturalist'}});
+  if(arr.length){PC[k]=arr;savePC();return arr}}catch(e){}
+ return[ph]}
+var io=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);loadPh(e.target)}})},{rootMargin:'300px'}):{observe:function(el){loadPh(el)},unobserve:function(){}};
+function loadPh(el){if(!el)return;var p=BY[el.getAttribute('data-id')];if(!p)return;getPhoto(p).then(function(ph){paint(el,ph,p)})}
+function emoji(el,p){el.classList.remove('load');el.innerHTML='<span class="em">'+CATS[p.cat][0]+'</span>'}
+function paint(el,ph,p){if(ph&&ph.u){var i=new Image();i.onload=function(){el.style.backgroundImage='url("'+ph.u+'")';el.classList.remove('load');el.innerHTML=''};i.onerror=function(){emoji(el,p)};i.src=ph.u}else emoji(el,p)}
+$('#netRetry').onclick=function(){NET=true;fails=0;showNet(false);Object.keys(PC).forEach(function(k){if(PC[k]===null)delete PC[k]});go(V)};
+
+/* ============ EXPLORE ============ */
+var V='explore',fCat='all',fText='',fGroup=null,list=[];
+function card(p){var l=lv(p);return '<div class="card" data-id="'+attr(p.id)+'"><div class="ph load" data-id="'+attr(p.id)+'"></div>'+(S.fav[p.id]?'<span class="fv">⭐</span>':'')+(l?'<span class="lvl">'+(l>=3?'🏆':'●'.repeat(l))+'</span>':'')+'<div class="t"><b>'+p.common+'</b><i>'+p.sci+'</i></div></div>'}
+function renderExplore(){
+ var items=[['all','🌏 All'],['fav','⭐ Favourites'],['todo','📚 Still learning']].concat(Object.keys(CATS).map(function(k){return [k,CATS[k][0]+' '+CATS[k][1]]}));
+ $('#chips').innerHTML=(fGroup?'<button class="chip on" data-c="__g">✕ '+fGroup.e+' '+fGroup.t+'</button>':'')+items.map(function(it){return '<button class="chip '+(fCat===it[0]&&!fGroup?'on':'')+'" data-c="'+it[0]+'">'+it[1]+'</button>'}).join('');
+ var t=fText.toLowerCase().trim();
+ list=P.filter(function(p){
+  if(fGroup){if(fGroup.g.indexOf(genus(p))<0)return false}
+  else{if(fCat==='fav'&&!S.fav[p.id])return false;if(fCat==='todo'&&lv(p)>=3)return false;if(CATS[fCat]&&p.cat!==fCat)return false}
+  if(t){var hay=(p.sci+' '+p.common+' '+p.aka.join(' ')+' '+p.tips.join(' ')+' '+p.hook).toLowerCase();return t.split(/\s+/).every(function(w){return hay.indexOf(w)>-1})}
+  return true});
+ $('#meta').textContent=list.length+' plant'+(list.length===1?'':'s')+' · tap a card for photos & ID clues';
+ $('#grid').innerHTML=list.map(card).join('')||'<p class="empty">No matches 🌱 Try another word.</p>';
+ $$('#grid .ph').forEach(function(el){io.observe(el)});
+ if(t||fGroup||fCat!=='all'){$('#potd').innerHTML='';return}
+ var p=P[(Math.floor(Date.now()/864e5)*7919)%P.length];
+ $('#potd').innerHTML='<div class="potd" data-id="'+attr(p.id)+'"><div class="ph load" data-id="'+attr(p.id)+'"></div><div><small>🌟 Plant of the day</small><b>'+p.common+'</b><i>'+p.sci+'</i><p>🧠 '+p.hook+'</p></div></div>';
+ loadPh($('#potd .ph'))}
+var tm;$('#q').addEventListener('input',function(e){clearTimeout(tm);tm=setTimeout(function(){fText=e.target.value;renderExplore()},180)});
+$('#chips').onclick=function(e){var c=e.target.closest('.chip');if(!c)return;fGroup=null;if(c.getAttribute('data-c')!=='__g')fCat=c.getAttribute('data-c');renderExplore()};
+$('#grid').onclick=function(e){var c=e.target.closest('.card');if(c)openD(c.getAttribute('data-id'),list)};
+$('#potd').onclick=function(e){var c=e.target.closest('.potd');if(c)openD(c.getAttribute('data-id'))};
+
+/* ============ DETAIL SHEET ============ */
+var dList=[],dI=0;
+function openD(id,lst){dList=lst&&lst.length?lst:[BY[id]];dI=0;for(var i=0;i<dList.length;i++)if(dList[i].id===id){dI=i;break}drawD();$('#sheet').classList.add('open');document.body.style.overflow='hidden'}
+function closeD(){$('#sheet').classList.remove('open');document.body.style.overflow='';if(V==='explore')renderExplore()}
+function drawD(){var p=dList[dI],gi=groupIdx(p),G=GROUPS[gi],l=Math.min(lv(p),5);
+ $('#sheetIn').innerHTML='<button class="x" id="dx">✕</button>'+
+ '<div style="position:relative"><div class="gal" id="gal"><div class="ph load"></div></div><button class="gbtn l" id="gl">‹</button><button class="gbtn r" id="gr">›</button></div>'+
+ '<div class="galnav" id="gdots"></div><div class="cap" id="cap"></div><div class="pad">'+
+ '<span class="badge">'+CATS[p.cat][0]+' '+CATS[p.cat][1]+'</span><h2>'+p.common+'</h2><div class="sci">'+p.sci+'</div>'+
+ (p.aka.length?'<div class="aka">Also known as: <i>'+p.aka.join(', ')+'</i></div>':'')+
+ '<h3>🔍 How to spot it</h3>'+tipsHTML(p)+
+ (p.hook?'<div class="hook">🧠 <b>Memory hook:</b> '+p.hook+'</div>':'')+
+ (p.note?'<div class="note">⚠️ '+p.note+'</div>':'')+
+ (G?'<div class="trick">💡 <b>Group trick – '+G.e+' '+G.t+'</b><div style="margin:4px 0">'+G.r+'</div><a href="#" id="dG">See the full cheat sheet →</a></div>':'')+
+ '<div class="row">Learning level: <span class="dots5">'+'●'.repeat(l)+'○'.repeat(5-l)+'</span>'+(lv(p)>=3?' 🏆':'')+'</div>'+
+ '<div class="row"><button class="btn '+(S.fav[p.id]?'gold':'')+'" id="dF">'+(S.fav[p.id]?'⭐ Favourited':'☆ Favourite')+'</button><button class="btn p" id="dK">✅ I know this one</button></div>'+
+ '<div class="row"><a class="btn" target="_blank" rel="noopener" href="https://www.inaturalist.org/taxa/search?q='+encodeURIComponent(p.q)+'">🌐 iNaturalist</a><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.sci.replace(/[‘’']/g,''))+'">🖼️ More photos</a></div>'+
+ '<div class="nav2"><button class="btn" id="dP" '+(dI?'':'disabled')+'>← Prev</button><span class="meta">'+(dI+1)+' / '+dList.length+'</span><button class="btn" id="dN" '+(dI<dList.length-1?'':'disabled')+'>Next →</button></div></div>';
+ $('#sheetIn').scrollTop=0;
+ $('#dx').onclick=closeD;
+ $('#dF').onclick=function(){if(S.fav[p.id])delete S.fav[p.id];else{S.fav[p.id]=1;toast('⭐ Added to favourites')}save();drawD()};
+ $('#dK').onclick=function(){S.box[p.id]=Math.max(3,lv(p));S.xp+=5;touch();save();stats();confetti(12);toast('🏆 Marked as mastered!');drawD()};
+ $('#dP').onclick=function(){if(dI>0){dI--;drawD()}};
+ $('#dN').onclick=function(){if(dI<dList.length-1){dI++;drawD()}};
+ if(G)$('#dG').onclick=function(e){e.preventDefault();closeD();go('tricks');setTimeout(function(){var el=document.getElementById('tk'+gi);if(el)el.scrollIntoView()},80)};
+ var gal=$('#gal');
+ $('#gl').onclick=function(){gal.scrollLeft-=gal.clientWidth};
+ $('#gr').onclick=function(){gal.scrollLeft+=gal.clientWidth};
+ getGallery(p).then(function(arr){if(dList[dI]!==p)return;
+  if(!arr.length){gal.innerHTML='<div class="ph"><span class="em">'+CATS[p.cat][0]+'</span></div>';$('#cap').textContent=NET?'No photo found – tap “More photos”.':'Photos unavailable right now – tap “More photos”.';return}
+  gal.innerHTML=arr.map(function(x){return '<div class="ph" style="background-image:url(\''+x.u+'\')"></div>'}).join('');
+  $('#gdots').innerHTML=arr.length>1?arr.map(function(_,i){return '<span class="'+(i?'':'on')+'"></span>'}).join(''):'';
+  var cap=function(i){var x=arr[i];$('#cap').textContent='📷 '+(x.a||'')+' · via '+x.s+(p.cv&&x.s==='iNaturalist'?' · may show the parent/related species':'');$$('#gdots span').forEach(function(d,j){d.classList.toggle('on',j===i)})};
+  cap(0);gal.onscroll=function(){cap(Math.min(arr.length-1,Math.round(gal.scrollLeft/gal.clientWidth)))}})}
+$('#sheet').onclick=function(e){if(e.target.id==='sheet')closeD()};
+
+/* ============ FLASHCARDS ============ */
+var L={deck:'all',mode:'photo',p:null,flip:false,last:null,h:0};
+function renderLearn(){var D=deck(L.deck),m=D.filter(function(p){return lv(p)>=3}).length;
+ $('#v-learn').innerHTML='<div class="panel"><div class="sel">'+deckSel('lDeck')+'<select id="lMode"><option value="photo">📸 Photo → name</option><option value="name">🔤 Name → features</option></select></div><div class="prog"><div style="width:'+(D.length?m/D.length*100:0)+'%"></div></div><div class="meta" style="margin:6px 0 0">🏆 '+m+' / '+D.length+' mastered · tap the card to flip · missed cards come back more often</div></div><div id="fcWrap"></div>';
+ $('#lDeck').value=L.deck;$('#lMode').value=L.mode;
+ $('#lDeck').onchange=function(e){L.deck=e.target.value;renderLearn()};
+ $('#lMode').onchange=function(e){L.mode=e.target.value;renderLearn()};
+ var W=$('#fcWrap');if(!D.length){W.innerHTML='<p class="empty">No plants in this deck yet – ⭐ some favourites first!</p>';return}
+ var p=L.p=pickW(D,L.last);L.last=p.id;L.flip=false;L.h=0;
+ var front=L.mode==='photo'
+  ?'<div class="ph load" data-id="'+attr(p.id)+'"></div><div class="lbl"><div class="bigname">Who am I? 🤔</div><div class="hint" id="hint">Tap the card to reveal</div><button class="btn" id="hintBtn">💡 Give me a clue</button></div>'
+  :'<div class="lbl" style="padding:40px 14px"><div class="big">'+CATS[p.cat][0]+'</div><div class="bigname">'+p.common+'</div><div class="sci">'+p.sci+'</div><p class="hint">Picture it… which 3 features would you look for? Then tap to flip.</p></div>';
+ W.innerHTML='<div class="flash"><div class="fc" id="fc"><div class="face front">'+front+'</div><div class="face back"><div class="ph load" data-id="'+attr(p.id)+'"></div><div class="pad"><div class="bigname">'+p.common+'</div><div class="sci">'+p.sci+'</div><div style="margin-top:10px">'+tipsHTML(p)+'</div>'+(p.hook?'<div class="hook">🧠 '+p.hook+'</div>':'')+'</div></div></div>'+
+  '<div class="ans" id="ans" style="visibility:hidden"><button class="btn red" id="again">😅 Again</button><button class="btn p" id="got">😎 Got it!</button></div></div>';
+ $$('#fcWrap .ph').forEach(loadPh);
+ $('#fc').onclick=flip;
+ var hb=$('#hintBtn');if(hb)hb.onclick=function(e){e.stopPropagation();var t=p.tips[L.h++];if(t)$('#hint').innerHTML+='<div>'+ico(t)+' '+stripP(t)+'</div>';if(L.h>=p.tips.length)hb.style.display='none'};
+ $('#again').onclick=function(){S.box[p.id]=0;touch();save();stats();renderLearn();window.scrollTo(0,0)};
+ $('#got').onclick=function(){var b=lv(p);S.box[p.id]=Math.min(5,b+1);S.xp+=2;if(b<3&&b+1>=3){confetti();toast('🏆 Mastered: '+p.common)}touch();save();stats();renderLearn();window.scrollTo(0,0)}}
+function flip(){var fc=$('#fc');if(!fc)return;L.flip=!L.flip;fc.classList.toggle('flip',L.flip);if(L.flip)$('#ans').style.visibility='visible'}
+
+/* ============ QUIZ ============ */
+var QZ={deck:'all',mode:'photo',done:true};
+function renderQuiz(){var k=QZ.deck+'|'+QZ.mode;QZ.done=true;
+ $('#v-quiz').innerHTML='<div class="panel center"><div class="big">🎯</div><h2>Plant Quiz</h2><p class="meta">10 questions. Wrong answers come from the same group, so look closely!</p><div class="sel" style="justify-content:center">'+deckSel('qDeck')+'<select id="qMode"><option value="photo">📸 Photo quiz</option><option value="clue">🔍 Clue quiz (no photo)</option></select></div><div class="row" style="justify-content:center"><button class="btn p" id="qGo">▶ Start quiz</button></div><p class="meta">Best score for this setup: '+(S.best[k]||0)+'/10</p></div>';
+ $('#qDeck').value=QZ.deck;$('#qMode').value=QZ.mode;
+ $('#qDeck').onchange=function(e){QZ.deck=e.target.value;renderQuiz()};
+ $('#qMode').onchange=function(e){QZ.mode=e.target.value;renderQuiz()};
+ $('#qGo').onclick=function(){if(!deck(QZ.deck).length){toast('That deck is empty!');return}
+  if(!NET&&QZ.mode==='photo'){QZ.mode='clue';toast('Photos unavailable – using the clue quiz')}
+  QZ.n=0;QZ.score=0;QZ.run=0;QZ.used={};QZ.missed=[];qNext()}}
+function makeOpts(c){var pool=P.filter(function(p){return p.id!==c.id&&p.common!==c.common});
+ var out=shuffle(pool.filter(function(p){return genus(p)===genus(c)})).slice(0,1);
+ var cand=shuffle(pool.filter(function(p){return p.cat===c.cat})).concat(shuffle(pool));
+ for(var i=0;i<cand.length&&out.length<3;i++){var p=cand[i];if(out.indexOf(p)<0&&!out.some(function(o){return o.common===p.common}))out.push(p)}
+ return shuffle([c].concat(out))}
+function qNext(){if(QZ.n>=10)return qEnd();
+ var D=deck(QZ.deck).filter(function(p){return !QZ.used[p.id]});if(!D.length)D=deck(QZ.deck);
+ var c=QZ.cur=pickW(D);QZ.used[c.id]=1;QZ.opts=makeOpts(c);QZ.done=false;QZ.n++;
+ var body=QZ.mode==='photo'?'<div class="qimg"><div class="ph load" data-id="'+attr(c.id)+'"></div></div>':'<div class="panel" style="max-width:520px;margin:0 auto"><b>Which plant matches these clues?</b><div style="margin-top:8px">'+tipsHTML(c,true)+'</div></div>';
+ $('#v-quiz').innerHTML='<div class="qtop"><span>Question '+QZ.n+'/10</span><span>✅ '+QZ.score+' · 🔥 '+QZ.run+'</span></div>'+body+'<div class="opts">'+QZ.opts.map(function(o,i){return '<button class="opt" data-i="'+i+'"><b>'+o.common+'</b><i>'+o.sci+'</i></button>'}).join('')+'</div><div id="qFb"></div>';
+ $$('#v-quiz .ph').forEach(loadPh);
+ $$('.opt').forEach(function(b){b.onclick=function(){qAns(+b.getAttribute('data-i'))}});
+ window.scrollTo(0,0)}
+function qAns(i){if(QZ.done)return;QZ.done=true;var c=QZ.cur,o=QZ.opts[i],btns=$$('.opt');
+ btns[QZ.opts.indexOf(c)].classList.add('ok');var right=o===c;
+ if(right){QZ.score++;QZ.run++;S.xp+=10+(QZ.run>2?5:0);S.box[c.id]=Math.min(5,lv(c)+1);confetti()}
+ else{btns[i].classList.add('no');QZ.run=0;QZ.missed.push(c);S.box[c.id]=0}
+ touch();save();stats();
+ $('#qFb').innerHTML=(QZ.mode==='clue'?'<div class="qimg" style="max-width:320px;margin:14px auto 0"><div class="ph load" data-id="'+attr(c.id)+'"></div></div>':'')+
+  '<div class="hook" style="max-width:520px;margin:14px auto 0">'+(right?'🎉 Correct!'+(QZ.run>2?' 🔥 Streak bonus!':''):'❌ It was <b>'+c.common+'</b>.')+'<br>🧠 '+c.hook+'</div>'+
+  '<div class="row" style="justify-content:center"><button class="btn" id="qInfo">📖 Details</button><button class="btn p" id="qNx">'+(QZ.n>=10?'See results 🏁':'Next ➜')+'</button></div>';
+ $$('#qFb .ph').forEach(loadPh);
+ $('#qInfo').onclick=function(){openD(c.id)};$('#qNx').onclick=qNext;
+ try{$('#qNx').scrollIntoView({block:'center'})}catch(e){}}
+function qEnd(){var k=QZ.deck+'|'+QZ.mode,old=S.best[k]||0,nb=QZ.score>old;S.best[k]=Math.max(old,QZ.score);save();QZ.done=true;
+ var s=QZ.score,msg=s===10?'PERFECT! You are a Leaf Legend!':s>=8?'Brilliant work!':s>=5?'Growing nicely!':'Every expert started as a seedling!';
+ if(s>=8)confetti(40);
+ $('#v-quiz').innerHTML='<div class="panel center"><div class="big">'+(s>=8?'🏆':s>=5?'🌿':'🌱')+'</div><h2>'+s+' / 10</h2><p>'+msg+'</p>'+(nb?'<p><b>🎉 New best score!</b></p>':'<p class="meta">Best: '+S.best[k]+'/10</p>')+'<div class="row" style="justify-content:center"><button class="btn p" id="qAgain">🔁 Play again</button><button class="btn" id="qHome">⚙️ Change quiz</button></div></div>'+(QZ.missed.length?'<h3>📚 Revise these</h3><div class="grid" id="qMiss">'+QZ.missed.map(card).join('')+'</div>':'');
+ $('#qAgain').onclick=function(){QZ.n=0;QZ.score=0;QZ.run=0;QZ.used={};QZ.missed=[];qNext()};
+ $('#qHome').onclick=renderQuiz;
+ var m=$('#qMiss');if(m){$$('#qMiss .ph').forEach(loadPh);var ml=QZ.missed.slice();m.onclick=function(e){var c=e.target.closest('.card');if(c)openD(c.getAttribute('data-id'),ml)}}
+ window.scrollTo(0,0)}
+
+/* ============ TRICKS ============ */
+function renderTricks(){
+ $('#v-tricks').innerHTML='<div class="tk" style="background:linear-gradient(135deg,#e3f1e6,#fff)"><h4>🧭 The 4-step ID method</h4><ol>'+
+ '<li><b>🌳 Shape</b> – tree, shrub, groundcover, grass-like, vine, fern or palm?</li>'+
+ '<li><b>🍃 Leaves</b> – opposite, alternate or whorled? Whole or divided? Crush and sniff!</li>'+
+ '<li><b>🪵 Bark & stems</b> – smooth, papery, stringy, furrowed, corky, prickly? Grass stems: triangle, round or jointed?</li>'+
+ '<li><b>🌸 Flowers & fruit</b> – ball, rod, brush, pea, bell, star? What\'s left behind: gumnuts, pods, berries, cones?</li></ol>'+
+ '<div class="rhyme">🎵 Learn the GROUP first (below), then the species. It halves the work!</div></div>'+
+ GROUPS.map(function(G,i){return '<div class="tk" id="tk'+i+'"><h4>'+G.e+' '+G.t+'</h4><ul>'+G.tips.map(function(t){return '<li>'+t+'</li>'}).join('')+'</ul><div class="rhyme">🎵 '+G.r+'</div><div class="row"><button class="btn" data-g="'+i+'">See these plants ('+P.filter(function(p){return G.g.indexOf(genus(p))>-1}).length+') →</button></div></div>'}).join('')+
+ '<div class="tk"><h4>⚙️ About & settings</h4><p class="meta">Victorian indigenous plants. Photos load live from iNaturalist (Wikipedia as backup) and are remembered on this device. Credits appear under each photo.</p><div class="row"><button class="btn red" id="reset">Reset my progress</button></div></div>';
+ $$('[data-g]').forEach(function(b){b.onclick=function(){fGroup=GROUPS[+b.getAttribute('data-g')];fText='';$('#q').value='';go('explore')}});
+ $('#reset').onclick=function(){if(confirm('Reset all progress, XP and favourites?')){S.box={};S.fav={};S.xp=0;S.best={};S.streak=0;S.last='';save();stats();toast('Progress reset 🌱')}}}
+
+/* ============ NAV & INIT ============ */
+function go(v){V=v;
+ $$('.view').forEach(function(x){x.classList.toggle('on',x.id==='v-'+v)});
+ $$('nav button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-v')===v)});
+ ({explore:renderExplore,learn:renderLearn,quiz:renderQuiz,tricks:renderTricks})[v]();window.scrollTo(0,0)}
+$$('nav button').forEach(function(b){b.onclick=function(){go(b.getAttribute('data-v'))}});
+document.addEventListener('keydown',function(e){
+ if($('#sheet').classList.contains('open')){if(e.key==='Escape')closeD();if(e.key==='ArrowRight'&&dI<dList.length-1){dI++;drawD()}if(e.key==='ArrowLeft'&&dI>0){dI--;drawD()}return}
+ if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+ if(V==='learn'&&$('#fc')){if(e.key===' '){e.preventDefault();flip()}if(L.flip&&e.key==='1')$('#again').click();if(L.flip&&e.key==='2')$('#got').click()}
+ if(V==='quiz'&&!QZ.done&&/^[1-4]$/.test(e.key))qAns(+e.key-1)});
+stats();renderExplore();
+</script>
+</body>
+</html>
